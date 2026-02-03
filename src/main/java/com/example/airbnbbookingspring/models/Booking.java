@@ -13,6 +13,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Builder
 @AllArgsConstructor
@@ -25,13 +27,13 @@ public class Booking {
     private Long id;
 
     @Column(nullable = false)
-    private String userId;
+    private Long userId;
 
     @Column(nullable = false)
-    private String airbnbId;
+    private Long airbnbId;
 
     @Column(nullable = false)
-    private String totalPrice;
+    private double totalPrice;
 
 
     @Enumerated(EnumType.STRING)
@@ -42,7 +44,9 @@ public class Booking {
     @Column(unique = true)
     private String idempotencyKey;
 
+    private LocalDate checkInDate;
 
+    private LocalDate checkOutDate;
 
 
 }

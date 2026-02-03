@@ -6,7 +6,11 @@ import org.springframework.stereotype.Repository;
 
 import com.example.airbnbbookingspring.models.Airbnb;
 
+import java.util.Optional;
+
 @Repository
 public interface AirbnbWriteRepository extends JpaRepository<Airbnb, Long> {
+
+    Optional<Airbnb> findById(Long id);
 
 }

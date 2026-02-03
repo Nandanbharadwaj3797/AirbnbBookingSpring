@@ -1,6 +1,7 @@
 package com.example.airbnbbookingspring.repositories.writes;
 
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,7 +14,14 @@ public interface AvailabilityWriteRepository extends JpaRepository<Availability,
 
     List<Availability> findByBookingId(Long bookingId);
 
-    List<Availability> findByAirbnbId(String airbnbId);
+    List<Availability> findByAirbnbId(Long airbnbId);
+
+    // SELECT * FROM availability WHERE airbnb_id = airbnbdId AND date BETWEEN startDate AND endDate;
+    List<Availability> findByAirbnbIdAndDateBetween(Long airbnbId, LocalDate startDate, LocalDate endDate);
+
+
+    // SELECT COUNT(*) FROM availability WHERE airbnb_id = airbnbdId AND date BETWEEN startDate AND endDate AND booking_id IS NOT NULL;
+    Long countByAirbnbIdAndDateBetweenAndBookingIdIsNotNull(Long airbnbId, LocalDate startDate, LocalDate endDate);
 
 
 }
