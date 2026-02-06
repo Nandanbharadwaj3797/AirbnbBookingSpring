@@ -11,6 +11,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
+
 @Entity
 @Builder
 @AllArgsConstructor
@@ -26,7 +28,7 @@ public class Availability {
     private String airbnbId;
 
     @Column(nullable = false)
-    private String date;
+    private LocalDate date;
 
     private Long bookingId; // null if available
 }
