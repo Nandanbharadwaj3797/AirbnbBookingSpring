@@ -1,11 +1,6 @@
 package com.example.airbnbbookingspring.models;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -24,11 +19,14 @@ public class Availability {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String airbnbId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "airbnb_id", nullable = false)
+    private Airbnb airbnb;
 
     @Column(nullable = false)
     private LocalDate date;
 
-    private Long bookingId; // null if available
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id")
+    private Booking booking; // null if available
 }

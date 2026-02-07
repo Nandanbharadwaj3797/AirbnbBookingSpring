@@ -1,13 +1,6 @@
 package com.example.airbnbbookingspring.models;
 
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,15 +19,16 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
-    @Column(nullable = false)
-    private Long airbnbId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "airbnb_id", nullable = false)
+    private Airbnb airbnb;
 
     @Column(nullable = false)
     private double totalPrice;
-
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -47,6 +41,5 @@ public class Booking {
     private LocalDate checkInDate;
 
     private LocalDate checkOutDate;
-
 
 }

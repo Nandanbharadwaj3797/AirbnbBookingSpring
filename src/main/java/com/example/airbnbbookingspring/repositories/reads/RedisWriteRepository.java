@@ -1,6 +1,5 @@
 package com.example.airbnbbookingspring.repositories.reads;
 
-
 import com.example.airbnbbookingspring.models.Booking;
 import com.example.airbnbbookingspring.models.readModels.BookingReadModel;
 
@@ -21,8 +20,8 @@ public class RedisWriteRepository {
     public void writeBookingReadModel(Booking booking) {
         BookingReadModel bookingReadModel = BookingReadModel.builder()
                 .id(booking.getId())
-                .airbnbId(booking.getAirbnbId())
-                .userId(booking.getUserId())
+                .airbnbId(booking.getAirbnb() != null ? booking.getAirbnb().getId() : null)
+                .userId(booking.getUser() != null ? booking.getUser().getId() : null)
                 .totalPrice(booking.getTotalPrice())
                 .bookingStatus(booking.getBookingStatus().name())
                 .idempotencyKey(booking.getIdempotencyKey())
