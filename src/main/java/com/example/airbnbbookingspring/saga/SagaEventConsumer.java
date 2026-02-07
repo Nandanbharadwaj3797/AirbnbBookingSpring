@@ -1,12 +1,8 @@
 package com.example.airbnbbookingspring.saga;
 
-
 import java.util.concurrent.TimeUnit;
 
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -16,15 +12,12 @@ import tools.jackson.databind.ObjectMapper;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-
 /**
- * Consumes saga events from a Redis queue and processes them.
+ * Consumes saga events from a queue and processes them using a receiver
+ * abstraction.
  */
 public class SagaEventConsumer {
-    @Value("${airbnb.saga.queue:saga:events}")
-    private String sagaQueue;
-
-    private final RedisTemplate<String, String> redisTemplate;
+    private final SagaEventReceiver sagaEventReceiver;
     private final ObjectMapper objectMapper;
     private final SagaEventProcessor sagaEventProcessor;
 
@@ -34,9 +27,9 @@ public class SagaEventConsumer {
     @Scheduled(fixedDelay = 500)
     public void consumeEvents() {
         try {
-            String eventJson = redisTemplate.opsForList().leftPop(sagaQueue, 1, TimeUnit.SECONDS);
+            String eventJson = sagaEventReceiver.receive();
             log.info("Event JSON: {}", eventJson);
-            if(eventJson != null && !eventJson.isEmpty()) {
+            if (eventJson != null && !eventJson.isEmpty()) {
                 SagaEvent sagaEvent = objectMapper.readValue(eventJson, SagaEvent.class);
                 log.info("Processing saga event: {}", sagaEvent.getSagaId());
                 sagaEventProcessor.processEvent(sagaEvent);
