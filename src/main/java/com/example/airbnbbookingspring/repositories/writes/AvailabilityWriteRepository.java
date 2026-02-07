@@ -1,6 +1,5 @@
 package com.example.airbnbbookingspring.repositories.writes;
 
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,14 +17,18 @@ public interface AvailabilityWriteRepository extends JpaRepository<Availability,
 
     List<Availability> findByAirbnbId(Long airbnbId);
 
-    // SELECT * FROM availability WHERE airbnb_id = airbnbdId AND date BETWEEN startDate AND endDate;
+    // SELECT * FROM availability WHERE airbnb_id = airbnbdId AND date BETWEEN
+    // startDate AND endDate;
     List<Availability> findByAirbnbIdAndDateBetween(Long airbnbId, LocalDate startDate, LocalDate endDate);
 
+    boolean existsByAirbnbIdAndDate(Long airbnbId, LocalDate date);
 
-    // SELECT COUNT(*) FROM availability WHERE airbnb_id = airbnbdId AND date BETWEEN startDate AND endDate AND booking_id IS NOT NULL;
+    // SELECT COUNT(*) FROM availability WHERE airbnb_id = airbnbdId AND date
+    // BETWEEN startDate AND endDate AND booking_id IS NOT NULL;
     Long countByAirbnbIdAndDateBetweenAndBookingIdIsNotNull(Long airbnbId, LocalDate startDate, LocalDate endDate);
 
-    // UPDATE availability SET booking_id = bookingId where airbnb_id = airbnbId and date BETWEEN startDate AND endDate;
+    // UPDATE availability SET booking_id = bookingId where airbnb_id = airbnbId and
+    // date BETWEEN startDate AND endDate;
     @Modifying
     @Query("UPDATE Availability a SET a.bookingId = :bookingId WHERE a.airbnbId = :airbnbId AND a.date BETWEEN :startDate AND :endDate")
     void updateBookingIdByAirbnbIdAndDateBetween(Long bookingId, Long airbnbId, LocalDate startDate, LocalDate endDate);
