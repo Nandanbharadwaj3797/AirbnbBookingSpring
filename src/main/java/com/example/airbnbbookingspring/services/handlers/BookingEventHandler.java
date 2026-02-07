@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.Map;
 
 import com.example.airbnbbookingspring.models.BookingStatus;
+import com.example.airbnbbookingspring.repositories.reads.RedisWriteRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import com.example.airbnbbookingspring.models.Booking;
@@ -20,8 +22,9 @@ public class BookingEventHandler {
 
     private final BookingWriteRepository bookingWriteRepository;
     private final SagaEventPublisher sagaEventPublisher;
+    private final RedisWriteRepository redisWriteRepository;
 
-
+    @Transactional
     public void handleBookingConfirmRequested(SagaEvent sagaEvent) {
         try {
             Map<String, Object> payload = sagaEvent.getPayload();
@@ -36,6 +39,9 @@ public class BookingEventHandler {
             booking.setBookingStatus(BookingStatus.CONFIRMED);
             bookingWriteRepository.save(booking);
 
+            // update it to redis
+            redisWriteRepository.writeBookingReadModel(booking);
+
             sagaEventPublisher.publishEvent("BOOKING_CONFIRMED","CONFIRM_BOOKING",
                     Map.of("bookingId", bookingId, "airbnbId", airbnbId, "checkInDate", checkInDate.toString(), "checkOutDate", checkOutDate.toString())
             );
@@ -47,6 +53,7 @@ public class BookingEventHandler {
 
     }
 
+    @Transactional
     public void handleBookingCancelRequested(SagaEvent sagaEvent) {
         try {
             Map<String, Object> payload = sagaEvent.getPayload();
@@ -59,6 +66,8 @@ public class BookingEventHandler {
             booking.setBookingStatus(BookingStatus.CANCELLED);
             bookingWriteRepository.save(booking);
 
+            redisWriteRepository.writeBookingReadModel(booking);
+
             sagaEventPublisher.publishEvent("BOOKING_CANCELLED","CANCEL_BOOKING",
                     Map.of("bookingId", bookingId, "airbnbId", airbnbId, "checkInDate", checkInDate.toString(), "checkOutDate", checkOutDate.toString())
             );
@@ -66,6 +75,7 @@ public class BookingEventHandler {
         } catch (Exception e) {
             Map<String, Object> payload = sagaEvent.getPayload();
             sagaEventPublisher.publishEvent("BOOKING_COMPENSATED", "COMPENSATE_BOOKING", payload);
+            // TODO: handle compensation -> add the current booking status also
             throw new RuntimeException("Failed to cancel booking", e);
         }
     }
