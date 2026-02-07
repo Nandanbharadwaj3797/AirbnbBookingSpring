@@ -1,6 +1,5 @@
 package com.example.airbnbbookingspring.services.handlers;
 
-
 import java.time.LocalDate;
 import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,9 +17,9 @@ import com.example.airbnbbookingspring.saga.SagaEventPublisher;
 
 import lombok.RequiredArgsConstructor;
 
-
 /**
- * Handles booking confirmation and cancellation events, updates booking status, and manages compensation events.
+ * Handles booking confirmation and cancellation events, updates booking status,
+ * and manages compensation events.
  */
 @Service
 @RequiredArgsConstructor
@@ -34,9 +33,10 @@ public class BookingEventHandler {
     @Value("${airbnb.saga.compensation-event:BOOKING_COMPENSATED}")
     private String compensationEventType;
 
-
     /**
-     * Handles booking confirmation event. Updates booking status and publishes compensation event if needed.
+     * Handles booking confirmation event. Updates booking status and publishes
+     * compensation event if needed.
+     * 
      * @param sagaEvent Saga event containing booking details
      */
     @Transactional
@@ -56,8 +56,8 @@ public class BookingEventHandler {
             redisWriteRepository.writeBookingReadModel(booking);
 
             sagaEventPublisher.publishEvent("BOOKING_CONFIRMED", "CONFIRM_BOOKING",
-                    Map.of("bookingId", bookingId, "airbnbId", airbnbId, "checkInDate", checkInDate.toString(), "checkOutDate", checkOutDate.toString())
-            );
+                    Map.of("bookingId", bookingId, "airbnbId", airbnbId, "checkInDate", checkInDate.toString(),
+                            "checkOutDate", checkOutDate.toString()));
         } catch (IllegalArgumentException e) {
             log.error("Booking not found: {}", e.getMessage(), e);
             publishCompensationEvent(payload);
@@ -69,9 +69,10 @@ public class BookingEventHandler {
         }
     }
 
-
     /**
-     * Handles booking cancellation event. Updates booking status and publishes compensation event if needed.
+     * Handles booking cancellation event. Updates booking status and publishes
+     * compensation event if needed.
+     * 
      * @param sagaEvent Saga event containing booking details
      */
     @Transactional
@@ -90,8 +91,8 @@ public class BookingEventHandler {
             redisWriteRepository.writeBookingReadModel(booking);
 
             sagaEventPublisher.publishEvent("BOOKING_CANCELLED", "CANCEL_BOOKING",
-                    Map.of("bookingId", bookingId, "airbnbId", airbnbId, "checkInDate", checkInDate.toString(), "checkOutDate", checkOutDate.toString())
-            );
+                    Map.of("bookingId", bookingId, "airbnbId", airbnbId, "checkInDate", checkInDate.toString(),
+                            "checkOutDate", checkOutDate.toString()));
         } catch (IllegalArgumentException e) {
             log.error("Booking not found: {}", e.getMessage(), e);
             publishCompensationEvent(payload);
@@ -105,9 +106,24 @@ public class BookingEventHandler {
 
     /**
      * Publishes a compensation event for failed booking operations.
+     * 
      * @param payload Saga event payload
      */
     private void publishCompensationEvent(Map<String, Object> payload) {
-        sagaEventPublisher.publishEvent(compensationEventType, "COMPENSATE_BOOKING", payload);
+        Object bookingIdObj = payload.get("bookingId");
+        BookingStatus bookingStatus = null;
+        if (bookingIdObj != null) {
+            try {
+                Long bookingId = Long.valueOf(bookingIdObj.toString());
+                Booking booking = bookingWriteRepository.findById(bookingId).orElse(null);
+                if (booking != null) {
+                    bookingStatus = booking.getBookingStatus();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        Map<String, Object> compensationPayload = new java.util.HashMap<>(payload);
+        compensationPayload.put("currentBookingStatus", bookingStatus != null ? bookingStatus.name() : null);
+        sagaEventPublisher.publishEvent(compensationEventType, "COMPENSATE_BOOKING", compensationPayload);
     }
 }
