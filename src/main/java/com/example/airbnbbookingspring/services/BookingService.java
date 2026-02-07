@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.example.airbnbbookingspring.models.BookingStatus;
-import com.example.airbnbbookingspring.saga.SagaEventPublisher;
+import com.example.airbnbbookingspring.saga.SagaEventSender;
 import org.springframework.stereotype.Service;
 
 import com.example.airbnbbookingspring.dtos.CreateBookingRequest;
@@ -46,7 +46,7 @@ public class BookingService implements IBookingService {
     private final ConcurrencyControlStrategy concurrencyControlStrategy;
     private final RedisWriteRepository redisWriteRepository;
     private final IdempotencyService idempotencyService;
-    private final SagaEventPublisher sagaEventPublisher;
+    private final SagaEventSender sagaEventSender;
 
     private final List<BookingStatusUpdateHandler> statusUpdateHandlers;
 
@@ -58,7 +58,7 @@ public class BookingService implements IBookingService {
             ConcurrencyControlStrategy concurrencyControlStrategy,
             RedisWriteRepository redisWriteRepository,
             IdempotencyService idempotencyService,
-            SagaEventPublisher sagaEventPublisher,
+            SagaEventSender sagaEventSender,
             List<BookingStatusUpdateHandler> statusUpdateHandlers) {
         this.bookingWriteRepository = bookingWriteRepository;
         this.availabilityWriteRepository = availabilityWriteRepository;
@@ -66,7 +66,7 @@ public class BookingService implements IBookingService {
         this.concurrencyControlStrategy = concurrencyControlStrategy;
         this.redisWriteRepository = redisWriteRepository;
         this.idempotencyService = idempotencyService;
-        this.sagaEventPublisher = sagaEventPublisher;
+        this.sagaEventSender = sagaEventSender;
         this.statusUpdateHandlers = statusUpdateHandlers;
     }
 
