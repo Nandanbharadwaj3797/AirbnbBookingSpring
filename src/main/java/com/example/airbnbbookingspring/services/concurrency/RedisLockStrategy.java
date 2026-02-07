@@ -51,7 +51,7 @@ public class RedisLockStrategy implements ConcurrencyControlStrategy {
      */
     @Override
     public List<Availability> lockAndCheckAvailability(Long airbnbId, LocalDate checkInDate, LocalDate checkOutDate, Long userId) {
-        Long bookedSlots = availabilityWriteRepository.countByAirbnbIdAndDateBetweenAndBookingIdIsNotNull(airbnbId, checkInDate, checkOutDate);
+        Long bookedSlots = availabilityWriteRepository.countByAirbnb_IdAndDateBetweenAndBookingIsNotNull(airbnbId, checkInDate, checkOutDate);
         if(bookedSlots > 0) {
             log.error("Airbnb is not available for all the given dates. AirbnbId: {}", airbnbId);
             throw new IllegalStateException("Airbnb is not available for all the given dates. Please try again with different dates.");
@@ -63,7 +63,7 @@ public class RedisLockStrategy implements ConcurrencyControlStrategy {
             throw new IllegalStateException("Failed to acquire booking for the given dates. Please try again.");
         }
         try {
-            return availabilityWriteRepository.findByAirbnbIdAndDateBetween(airbnbId, checkInDate, checkOutDate);
+            return availabilityWriteRepository.findByAirbnb_IdAndDateBetween(airbnbId, checkInDate, checkOutDate);
         } catch (Exception e) {
             log.error("Error during availability check: {}", e.getMessage(), e);
             releaseLock(airbnbId, checkInDate, checkOutDate);

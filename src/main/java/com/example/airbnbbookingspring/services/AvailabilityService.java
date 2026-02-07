@@ -66,7 +66,7 @@ public class AvailabilityService implements IAvailabilityService {
         for (com.example.airbnbbookingspring.models.Airbnb airbnb : airbnbs) {
             for (int i = 0; i < 30; i++) {
                 LocalDate date = LocalDate.now().plusDays(i);
-                if (!availabilityWriteRepository.existsByAirbnbIdAndDate(airbnb.getId(), date)) {
+                if (!availabilityWriteRepository.existsByAirbnb_IdAndDate(airbnb.getId(), date)) {
                     Availability availability = Availability.builder()
                             .airbnb(airbnb)
                             .date(date)

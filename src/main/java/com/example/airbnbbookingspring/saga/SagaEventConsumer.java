@@ -1,43 +1,39 @@
 package com.example.airbnbbookingspring.saga;
 
-import java.util.concurrent.TimeUnit;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
-
 import lombok.RequiredArgsConstructor;
 import tools.jackson.databind.ObjectMapper;
 
-@Component
-@RequiredArgsConstructor
-@Slf4j
 /**
- * Consumes saga events from a queue and processes them using a receiver
+ * Consumes saga events from Kafka and processes them using a processor
  * abstraction.
  */
+@Slf4j
+@Component
+@RequiredArgsConstructor
 public class SagaEventConsumer {
-    private final SagaEventReceiver sagaEventReceiver;
     private final ObjectMapper objectMapper;
     private final SagaEventProcessor sagaEventProcessor;
 
     /**
-     * Polls the saga queue for events and processes them.
+     * Consumes saga events from Kafka topic and processes them.
      */
-    @Scheduled(fixedDelay = 500)
-    public void consumeEvents() {
+    @KafkaListener(topics = "${airbnb.saga.kafka.topic:saga-events}", groupId = "saga-group")
+    public void onMessage(String eventJson) {
+        if (eventJson == null || eventJson.isEmpty()) {
+            log.warn("Received empty or null event from Kafka topic");
+            return;
+        }
         try {
-            String eventJson = sagaEventReceiver.receive();
-            log.info("Event JSON: {}", eventJson);
-            if (eventJson != null && !eventJson.isEmpty()) {
-                SagaEvent sagaEvent = objectMapper.readValue(eventJson, SagaEvent.class);
-                log.info("Processing saga event: {}", sagaEvent.getSagaId());
-                sagaEventProcessor.processEvent(sagaEvent);
-                log.info("Saga event processed successfully for saga id: {}", sagaEvent.getSagaId());
-            }
+            SagaEvent sagaEvent = objectMapper.readValue(eventJson, SagaEvent.class);
+            log.info("Processing saga event: {}", sagaEvent.getSagaId());
+            sagaEventProcessor.processEvent(sagaEvent);
+            log.info("Saga event processed successfully for saga id: {}", sagaEvent.getSagaId());
         } catch (Exception e) {
             log.error("Error processing saga event: {}", e.getMessage(), e);
-            throw new IllegalStateException("Failed to process saga event", e);
+            // Optionally: send to DLQ or retry
         }
     }
 }
