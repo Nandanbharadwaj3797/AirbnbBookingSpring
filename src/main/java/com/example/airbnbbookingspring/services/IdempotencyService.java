@@ -33,20 +33,26 @@ public class IdempotencyService implements IIdempotencyService {
 
         if (bookingReadModel != null) {
             // TODO: move it to a mapper/adapter
+            Airbnb airbnb = null;
+            if (bookingReadModel.getAirbnbId() != null) {
+                airbnb = Airbnb.builder().build();
+                airbnb.setId(bookingReadModel.getAirbnbId());
+            }
+            User user = null;
+            if (bookingReadModel.getUserId() != null) {
+                user = User.builder().build();
+                user.setId(bookingReadModel.getUserId());
+            }
             Booking booking = Booking.builder()
-                    .id(bookingReadModel.getId())
-                    .airbnb(bookingReadModel.getAirbnbId() != null
-                            ? Airbnb.builder().id(bookingReadModel.getAirbnbId()).build()
-                            : null)
-                    .user(bookingReadModel.getUserId() != null ? User.builder().id(bookingReadModel.getUserId()).build()
-                            : null)
+                    .airbnb(airbnb)
+                    .user(user)
                     .totalPrice(bookingReadModel.getTotalPrice())
                     .bookingStatus(BookingStatus.valueOf(bookingReadModel.getBookingStatus()))
                     .idempotencyKey(bookingReadModel.getIdempotencyKey())
                     .checkInDate(bookingReadModel.getCheckInDate())
                     .checkOutDate(bookingReadModel.getCheckOutDate())
                     .build();
-
+            booking.setId(bookingReadModel.getId());
             return Optional.of(booking);
         }
 
